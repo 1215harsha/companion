@@ -28,6 +28,8 @@ const CustomTooltip = ({ active, payload, label, metric }) => {
 
 export default function Dashboard({ user }) {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [isIOS, setIsIOS] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
   const [expandedMetric, setExpandedMetric] = useState(null); 
   const [showWeightModal, setShowWeightModal] = useState(false);
   const [newWeight, setNewWeight] = useState('');
@@ -54,6 +56,10 @@ export default function Dashboard({ user }) {
   }, [user?.primaryGoal]);
 
   useEffect(() => {
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    setIsIOS(/iphone|ipad|ipod/.test(userAgent));
+    setIsStandalone(window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true);
+
     const handleBeforeInstallPrompt = (e) => {
       e.preventDefault();
       setDeferredPrompt(e);
@@ -288,7 +294,7 @@ export default function Dashboard({ user }) {
         </div>
       </div>
 
-      {deferredPrompt && (
+      {deferredPrompt && !isStandalone && (
         <button 
           onClick={handleInstallClick}
           className="btn-primary"
@@ -296,6 +302,14 @@ export default function Dashboard({ user }) {
         >
           Download App to Mobile
         </button>
+      )}
+
+      {isIOS && !isStandalone && (
+        <div style={{ background: 'var(--surface-color)', padding: '1rem', borderRadius: '12px', border: '1px solid var(--border-color)', marginBottom: '1.5rem', textAlign: 'center' }}>
+          <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+            <strong style={{ color: 'var(--text-primary)' }}>Install App:</strong> Tap the <strong>Share</strong> icon in Safari, then select <strong>Add to Home Screen</strong>.
+          </p>
+        </div>
       )}
 
       {showEditGoals && (
