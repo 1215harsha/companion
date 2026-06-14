@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { db } from '../db/db';
-import { Plus, Loader, Utensils, Flame } from 'lucide-react';
+import { Plus, Loader, Utensils, Flame, Trash2 } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
 
 const categorizeTime = (dateObj) => {
@@ -34,26 +34,60 @@ export default function FoodLogger() {
 
     setIsAnalyzing(true);
 
-    // Simulate AI Agent connection to fetch macros
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    try {
+      const settingsArray = await db.settings.toArray();
+      const apiKey = settingsArray.length > 0 ? settingsArray[0].geminiKey : null;
 
-    // Mock AI response
-    const mockCalories = Math.floor(Math.random() * 600) + 50;
-    const mockProtein = Math.floor(Math.random() * 40) + 2;
-    const mockFiber = Math.floor(Math.random() * 10) + 1;
+      if (!apiKey) {
+        alert("Please set your Gemini AI API Key in the Dashboard Settings first!");
+        setIsAnalyzing(false);
+        return;
+      }
 
-    await db.food_logs.add({
-      date: new Date().toISOString(),
-      name: foodName,
-      amount: amount,
-      calories: mockCalories,
-      protein: mockProtein,
-      fiber: mockFiber
-    });
+      const promptText = `I ate ${amount} of ${foodName}. Return a valid JSON object strictly with these keys: "calories" (number), "protein" (number), "fiber" (number). Estimate the nutritional macros accurately based on standard USDA data. Do not include markdown formatting, backticks, or extra text. Just return the raw JSON object.`;
 
-    setFoodName('');
-    setAmount('');
-    setIsAnalyzing(false);
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: promptText }] }]
+        })
+      });
+
+      if (!response.ok) throw new Error('API Request Failed');
+      
+      const data = await response.json();
+      let textResponse = data.candidates[0].content.parts[0].text.trim();
+      
+      // Strip markdown code blocks if the AI accidentally included them
+      if (textResponse.startsWith('```json')) textResponse = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+      else if (textResponse.startsWith('```')) textResponse = textResponse.replace(/```/g, '').trim();
+
+      const parsed = JSON.parse(textResponse);
+      
+      await db.food_logs.add({
+        date: new Date().toISOString(),
+        name: foodName,
+        amount: amount,
+        calories: parsed.calories || 0,
+        protein: parsed.protein || 0,
+        fiber: parsed.fiber || 0
+      });
+
+    } catch (err) {
+      console.error("Gemini AI Error:", err);
+      alert("AI analysis failed. Please check your internet connection and ensure your API Key is valid.");
+    } finally {
+      setFoodName('');
+      setAmount('');
+      setIsAnalyzing(false);
+    }
+  };
+
+  const deleteFood = async (id) => {
+    if (window.confirm("Delete this food log?")) {
+      await db.food_logs.delete(id);
+    }
   };
 
   // Group logs by Date (e.g. "June 07")
@@ -146,10 +180,18 @@ export default function FoodLogger() {
                     </span>
                   </div>
 
-                  <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem', fontSize: '0.85rem' }}>
-                    <span style={{ color: 'var(--text-primary)' }}>{item.calories} kcal</span>
-                    <span>{item.protein}g P</span>
-                    <span>{item.fiber}g F</span>
+                  <div className="flex-between" style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem', fontSize: '0.85rem' }}>
+                    <div style={{ display: 'flex', gap: '1rem' }}>
+                      <span style={{ color: 'var(--text-primary)' }}>{item.calories} kcal</span>
+                      <span>{item.protein}g P</span>
+                      <span>{item.fiber}g F</span>
+                    </div>
+                    <button 
+                      onClick={() => deleteFood(item.id)}
+                      style={{ background: 'transparent', color: '#ff5c5c', padding: '0.2rem', display: 'flex', alignItems: 'center' }}
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   </div>
                 </div>
               ))}

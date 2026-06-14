@@ -15,6 +15,13 @@ export default function Layout({ children, currentTab, setCurrentTab, userName }
     setLastScrollY(currentScrollY);
   };
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    return 'Good evening';
+  };
+
   return (
     <div className="layout">
       <header 
@@ -34,7 +41,7 @@ export default function Layout({ children, currentTab, setCurrentTab, userName }
         }}
       >
         <h2 style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>
-          {userName ? `Good morning, ${userName}` : 'Companion'}
+          {userName ? `${getGreeting()}, ${userName}` : 'Companion'}
         </h2>
       </header>
       
