@@ -42,7 +42,7 @@ function App() {
 
   return (
     <>
-      <Layout currentTab={currentTab} setCurrentTab={setCurrentTab}>
+      <Layout currentTab={currentTab} setCurrentTab={setCurrentTab} userName={users[0]?.name}>
         <div style={{ display: currentTab === 'dashboard' ? 'block' : 'none' }}>
           <Dashboard user={users[0]} />
         </div>

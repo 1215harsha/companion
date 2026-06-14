@@ -91,7 +91,6 @@ export default function Onboarding({ onComplete }) {
       currentWeight: Number(currentWeight),
       goalWeight: Number(goalWeight),
       primaryGoal,
-      musicApp,
       goalCalories: Number(macros.calories),
       goalProtein: Number(macros.protein),
       goalFiber: Number(macros.fiber),

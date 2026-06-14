@@ -27,6 +27,7 @@ const CustomTooltip = ({ active, payload, label, metric }) => {
 };
 
 export default function Dashboard({ user }) {
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [expandedMetric, setExpandedMetric] = useState(null); 
   const [showWeightModal, setShowWeightModal] = useState(false);
   const [newWeight, setNewWeight] = useState('');
@@ -51,6 +52,27 @@ export default function Dashboard({ user }) {
       setGraphConfig(prev => ({ ...prev, metric: 'caloriesBurned' }));
     }
   }, [user?.primaryGoal]);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setDeferredPrompt(null);
+      }
+    }
+  };
 
   const workouts = useLiveQuery(() => db.workouts.orderBy('date').toArray());
   const foodLogs = useLiveQuery(() => db.food_logs.orderBy('date').toArray());
@@ -265,6 +287,16 @@ export default function Dashboard({ user }) {
           </button>
         </div>
       </div>
+
+      {deferredPrompt && (
+        <button 
+          onClick={handleInstallClick}
+          className="btn-primary"
+          style={{ width: '100%', padding: '1rem', marginBottom: '1.5rem', background: '#FFFFFF', color: '#000000', fontWeight: 'bold' }}
+        >
+          Download App to Mobile
+        </button>
+      )}
 
       {showEditGoals && (
         <div className="card page-transition flex-col" style={{ marginBottom: '1.5rem', gap: '1rem', border: '1px solid var(--text-primary)' }}>

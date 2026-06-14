@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Dumbbell, CalendarDays } from 'lucide-react';
 
-export default function Layout({ children, currentTab, setCurrentTab }) {
+export default function Layout({ children, currentTab, setCurrentTab, userName }) {
   const [showHeader, setShowHeader] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
@@ -33,7 +33,9 @@ export default function Layout({ children, currentTab, setCurrentTab }) {
           margin: '0 auto'
         }}
       >
-        <h2>Companion</h2>
+        <h2 style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>
+          {userName ? `Good morning, ${userName}` : 'Companion'}
+        </h2>
       </header>
       
       <main className="main-content" onScroll={handleScroll} style={{ paddingTop: '5rem' }}>
