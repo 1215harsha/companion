@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { db } from '../db/db';
 import { Plus, Loader, Utensils, Flame, Trash2 } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
+import { parseFoodInput } from '../utils/nutritionDB';
 
 const categorizeTime = (dateObj) => {
   const hours = dateObj.getHours();
@@ -35,48 +36,29 @@ export default function FoodLogger() {
     setIsAnalyzing(true);
 
     try {
-      const settingsArray = await db.settings.toArray();
-      const apiKey = settingsArray.length > 0 ? settingsArray[0].geminiKey : null;
+      // Simulate slight processing delay for UX
+      await new Promise(resolve => setTimeout(resolve, 800));
 
-      if (!apiKey) {
-        alert("Please set your Gemini AI API Key in the Dashboard Settings first!");
+      const parsedMacros = parseFoodInput(foodName, amount);
+
+      if (!parsedMacros) {
+        alert("Sorry, I don't recognize this food in the offline database. Try basic ingredients (e.g. 'chicken', 'white rice', 'apple', 'eggs').");
         setIsAnalyzing(false);
         return;
       }
-
-      const promptText = `I ate ${amount} of ${foodName}. Return a valid JSON object strictly with these keys: "calories" (number), "protein" (number), "fiber" (number). Estimate the nutritional macros accurately based on standard USDA data. Do not include markdown formatting, backticks, or extra text. Just return the raw JSON object.`;
-
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: promptText }] }]
-        })
-      });
-
-      if (!response.ok) throw new Error('API Request Failed');
-      
-      const data = await response.json();
-      let textResponse = data.candidates[0].content.parts[0].text.trim();
-      
-      // Strip markdown code blocks if the AI accidentally included them
-      if (textResponse.startsWith('```json')) textResponse = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
-      else if (textResponse.startsWith('```')) textResponse = textResponse.replace(/```/g, '').trim();
-
-      const parsed = JSON.parse(textResponse);
       
       await db.food_logs.add({
         date: new Date().toISOString(),
-        name: foodName,
+        name: `${foodName} (${parsedMacros.matchedName})`,
         amount: amount,
-        calories: parsed.calories || 0,
-        protein: parsed.protein || 0,
-        fiber: parsed.fiber || 0
+        calories: parsedMacros.calories,
+        protein: parsedMacros.protein,
+        fiber: parsedMacros.fiber
       });
 
     } catch (err) {
-      console.error("Gemini AI Error:", err);
-      alert("AI analysis failed. Please check your internet connection and ensure your API Key is valid.");
+      console.error("Local NLP Error:", err);
+      alert("Analysis failed.");
     } finally {
       setFoodName('');
       setAmount('');

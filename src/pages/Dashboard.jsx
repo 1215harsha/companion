@@ -39,17 +39,8 @@ export default function Dashboard({ user }) {
     goalWeight: user?.goalWeight || '',
     goalCalories: user?.goalCalories || '',
     goalProtein: user?.goalProtein || '',
-    primaryGoal: user?.primaryGoal || 'general',
-    geminiKey: ''
+    primaryGoal: user?.primaryGoal || 'general'
   });
-
-  const settingsData = useLiveQuery(() => db.settings.toArray());
-
-  useEffect(() => {
-    if (settingsData && settingsData.length > 0) {
-      setEditGoals(prev => ({ ...prev, geminiKey: settingsData[0].geminiKey || '' }));
-    }
-  }, [settingsData]);
 
   const [showGraphConfig, setShowGraphConfig] = useState(false);
   const [graphConfig, setGraphConfig] = useState({
@@ -127,18 +118,6 @@ export default function Dashboard({ user }) {
         primaryGoal: editGoals.primaryGoal
       });
     }
-    
-    if (settingsData && settingsData.length > 0) {
-      await db.settings.update(settingsData[0].id, {
-        geminiKey: editGoals.geminiKey
-      });
-    } else {
-      await db.settings.add({
-        geminiKey: editGoals.geminiKey,
-        focusModeEnabled: false
-      });
-    }
-    
     setShowEditGoals(false);
   };
 
@@ -352,10 +331,6 @@ export default function Dashboard({ user }) {
             <div style={{ flex: '1 1 100px' }}>
               <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.2rem' }}>Calories (kcal)</label>
               <input type="number" value={editGoals.goalCalories} onChange={e => setEditGoals({...editGoals, goalCalories: e.target.value})} style={{ width: '100%', padding: '0.8rem', background: 'var(--bg-color)' }} />
-            </div>
-            <div style={{ flex: '1 1 100%' }}>
-              <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.2rem' }}>Gemini AI API Key (For accurate food macros)</label>
-              <input type="password" placeholder="AIzaSy..." value={editGoals.geminiKey} onChange={e => setEditGoals({...editGoals, geminiKey: e.target.value})} style={{ width: '100%', padding: '0.8rem', background: 'var(--bg-color)' }} />
             </div>
           </div>
           <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
