@@ -51,6 +51,18 @@ export const nutritionDB = {
   "carrot": { calories: 41, protein: 0.9, fiber: 2.8, type: 'veg' },
   "avocado": { calories: 160, protein: 2, fiber: 7, type: 'piece', pieceWeight: 150 },
   
+  // Mixed & Indian Foods
+  "chicken biryani": { calories: 150, protein: 10, fiber: 1, type: 'mixed' },
+  "mutton biryani": { calories: 160, protein: 9, fiber: 1, type: 'mixed' },
+  "veg biryani": { calories: 120, protein: 3, fiber: 2, type: 'mixed' },
+  "biryani": { calories: 140, protein: 8, fiber: 1, type: 'mixed' },
+  "dal": { calories: 116, protein: 9, fiber: 8, type: 'mixed' },
+  "lentils": { calories: 116, protein: 9, fiber: 8, type: 'mixed' },
+  "idli": { calories: 39, protein: 1.2, fiber: 0.5, type: 'piece', pieceWeight: 40 },
+  "dosa": { calories: 133, protein: 3, fiber: 0.9, type: 'piece', pieceWeight: 80 },
+  "paneer tikka": { calories: 250, protein: 14, fiber: 1, type: 'mixed' },
+  "butter chicken": { calories: 230, protein: 12, fiber: 0.5, type: 'mixed' },
+
   // Junk / Fast Food (approximate)
   "pizza": { calories: 266, protein: 11, fiber: 2.3, type: 'piece', pieceWeight: 100 },
   "burger": { calories: 295, protein: 14, fiber: 1.5, type: 'piece', pieceWeight: 200 }
@@ -76,9 +88,23 @@ export const parseFoodInput = (foodStr, amountStr) => {
   // Look for partial match if exact match fails
   if (!nutritionDB[dbKey]) {
     const keys = Object.keys(nutritionDB);
-    const match = keys.find(k => food.includes(k) || k.includes(food));
-    if (match) dbKey = match;
-    else return null; // Food not found
+    // Find all keys that are explicitly in the user's input
+    const matches = keys.filter(k => food.includes(k));
+    
+    if (matches.length > 0) {
+      // Pick the longest matching key (e.g. "chicken biryani" > "chicken")
+      matches.sort((a, b) => b.length - a.length);
+      dbKey = matches[0];
+    } else {
+      // Fallback: check if the user's input is included in the DB key
+      const reverseMatches = keys.filter(k => k.includes(food));
+      if (reverseMatches.length > 0) {
+        reverseMatches.sort((a, b) => b.length - a.length);
+        dbKey = reverseMatches[0];
+      } else {
+        return null; // Food not found
+      }
+    }
   }
 
   const data = nutritionDB[dbKey];
