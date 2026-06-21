@@ -12,8 +12,34 @@ const FILTER_TABS = [
   { id: 'Following', label: 'FOLLOWING', icon: Users }
 ];
 
+interface Comment {
+  id: string;
+  name: string;
+  text: string;
+  time: string;
+}
+
+interface Post {
+  id: string;
+  user: { name: string; level: number; class: string; };
+  location: string;
+  content: string;
+  stats: { label: string; value: string; }[];
+  muscleGroup: string;
+  workoutNumber: number;
+  isPersonalRecord?: boolean;
+  highlightText?: string;
+  isGymVerified?: boolean;
+  rankBadge: string;
+  respected: boolean;
+  respectCount: number;
+  shareCount: number;
+  shared: boolean;
+  comments: Comment[];
+}
+
 // Initial Simulated Mock Database
-const INITIAL_POSTS = [
+const INITIAL_POSTS: Post[] = [
   {
     id: '1',
     user: { name: 'Harsha', level: 25, class: 'Warrior' },

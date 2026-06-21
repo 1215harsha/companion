@@ -96,9 +96,9 @@ export const SearchScreen = () => {
         // Fallback for demo when backend is offline
         const lowerText = text.toLowerCase();
         const demoResults: SearchResult[] = [
-          { id: '1', type: 'profile', title: 'Harsha', subtitle: 'Lv.25 Warrior | 140kg Bench PR' },
-          { id: '2', type: 'profile', title: 'Sam Sulek', subtitle: 'Lv.65 Bulk Master | Squats 220kg' },
-          { id: '3', type: 'profile', title: 'David Laid', subtitle: 'Lv.80 Aesthetic Lord | Skyline Gym' },
+          { id: '1', type: 'profile' as const, title: 'Harsha', subtitle: 'Lv.25 Warrior | 140kg Bench PR' },
+          { id: '2', type: 'profile' as const, title: 'Sam Sulek', subtitle: 'Lv.65 Bulk Master | Squats 220kg' },
+          { id: '3', type: 'profile' as const, title: 'David Laid', subtitle: 'Lv.80 Aesthetic Lord | Skyline Gym' },
         ].filter(p => p.title.toLowerCase().includes(lowerText));
         setResults(demoResults);
       } finally {
@@ -348,8 +348,8 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     height: '100%',
-    color: COLORS.text,
     ...TYPOGRAPHY.body,
+    color: COLORS.text,
   },
   aiButton: {
     flexDirection: 'row',

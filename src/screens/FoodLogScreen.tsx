@@ -352,7 +352,7 @@ export const FoodLogScreen = () => {
                 {/* Results */}
                 <FlatList
                   data={results}
-                  keyExtractor={item => item.code}
+                  keyExtractor={item => item.id}
                   style={s.resultList}
                   keyboardShouldPersistTaps="handled"
                   renderItem={({ item }) => (
