@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Home, Search, Plus, TrendingUp, Map } from 'lucide-react-native';
+import { Home, Search, Plus, TrendingUp, UtensilsCrossed } from 'lucide-react-native';
 import { FeedScreen } from '../screens/FeedScreen';
 import { SearchScreen } from '../screens/SearchScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
-import { MapScreen } from '../screens/MapScreen';
+import { FoodLogScreen } from '../screens/FoodLogScreen';
 import { Header } from './Header';
 import { COLORS } from '../theme/colors';
 import { CreatePostModal } from '../components/CreatePostModal';
@@ -86,11 +86,11 @@ export const MainNavigator = () => {
           }}
         />
         <Tab.Screen 
-          name="Map" 
-          component={MapScreen} 
+          name="FoodLog" 
+          component={FoodLogScreen} 
           options={{
-            tabBarLabel: 'MAP',
-            tabBarIcon: ({ color }) => <Map color={color} size={24} />,
+            tabBarLabel: 'NUTRITION',
+            tabBarIcon: ({ color }) => <UtensilsCrossed color={color} size={24} />,
           }}
         />
       </Tab.Navigator>
