@@ -1,10 +1,16 @@
 module.exports = function(api) {
-  // api.caller() handles its own caching — do NOT call api.cache() alongside it.
-  // Skip the reanimated Babel plugin for web; it requires native-only react-native-worklets.
-  const platform = api.caller((caller) => caller && caller.platform);
+  api.cache(true);
+
+  // react-native-reanimated/plugin requires react-native-worklets which is
+  // native-only and not installed in Vercel's clean environment.
+  // process.env.VERCEL is always set to '1' during Vercel builds.
+  const plugins = [];
+  if (!process.env.VERCEL) {
+    plugins.push('react-native-reanimated/plugin');
+  }
 
   return {
     presets: ['babel-preset-expo'],
-    plugins: platform === 'web' ? [] : ['react-native-reanimated/plugin'],
+    plugins,
   };
 };
